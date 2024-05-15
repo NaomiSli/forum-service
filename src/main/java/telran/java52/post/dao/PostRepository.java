@@ -7,6 +7,7 @@ import telran.java52.post.dto.PostDto;
 import telran.java52.post.model.Post;
 
 public interface PostRepository extends MongoRepository<Post, String> {
+	
 	Iterable<PostDto> findPostsByAuthorIgnoreCase(String author);
 
 	Iterable<PostDto> findByTags(List<String> tags);
