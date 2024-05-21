@@ -32,7 +32,6 @@ public class UserAccountController {
 		return userAccountService.register(userRegisterDto);
 	}
 
-	// TODO Don't testing
 	@PostMapping("/login")
 	public UserDto login(Principal principal) {
 		return userAccountService.getUser(principal.getName());
@@ -63,7 +62,6 @@ public class UserAccountController {
 		return userAccountService.changeRolesList(login, role, false);
 	}
 
-	// TODO Don't testing
 	@PutMapping("/password")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void changePassword(Principal principal, @RequestHeader("X-Password") String newPassword) {

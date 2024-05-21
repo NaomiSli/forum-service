@@ -16,4 +16,3 @@ public interface PostRepository extends MongoRepository<Post, String> {
 	Stream<Post> findByDateCreatedBetween(LocalDate from, LocalDate to);
 
 }
-
