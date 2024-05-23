@@ -43,7 +43,7 @@ public class AuthenticationFilter implements Filter {
 				}
 				request = new WrappedRequest(request, userAccount.getLogin());
 			} catch (Exception e) {
-				response.sendError(401);
+				 response.sendError(401);
 				return;
 			} 
 		}
