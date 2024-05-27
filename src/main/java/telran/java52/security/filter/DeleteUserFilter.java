@@ -5,6 +5,7 @@ import java.security.Principal;
 import java.util.Set;
 
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 
 import jakarta.servlet.Filter;
@@ -15,14 +16,12 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-//import telran.java52.accounting.dao.UserAccountRepository;
-//import telran.java52.accounting.model.Role;
-//import telran.java52.accounting.model.UserAccount;
 
 @Component
 @RequiredArgsConstructor
-@Order(20)
-public class AdminManagingRolesFilter implements Filter {
+@Order(40)
+public class DeleteUserFilter implements Filter {
+
 //	final UserAccountRepository userAccountRepository;
 
 	@Override
@@ -30,33 +29,32 @@ public class AdminManagingRolesFilter implements Filter {
 			throws IOException, ServletException {
 		HttpServletRequest request = (HttpServletRequest) req;
 		HttpServletResponse response = (HttpServletResponse) resp;
-		
 		if (checkEndpoint(request.getMethod(), request.getServletPath())) {
 			Principal principal = request.getUserPrincipal();
-			
 			if (principal instanceof telran.java52.security.model.User) {
 				Set<String> roles = ((telran.java52.security.model.User) principal).getRoles();
-				
-				if (!roles.contains("ADMINISTRATOR")) {
-					response.sendError(403, "You are not allowed to access this resource");
+				String[] arr = request.getServletPath().split("/");
+				String owner = arr[arr.length - 1];
+				if (!roles.contains("ADMINISTRATOR") || !principal.getName().equalsIgnoreCase(owner)) {
+					response.sendError(403, "Permission denied");
 					return;
 				}
 			}
 		}
-	
-//            String principal = request.getUserPrincipal().getName();
-//            UserAccount userAccount = userAccountRepository.findById(principal).get();        
-//            if(!userAccount.getRoles().contains(Role.ADMINISTRATOR)){
-//                response.sendError(403, "You are not allowed to access this resource");
-//                return;
-//            }
-//        }
-		
+//			String principal = request.getUserPrincipal().getName();
+//            UserAccount userAccount = userAccountRepository.findById(principal).get();
+//			String[] arr = request.getServletPath().split("/");
+//			String owner = arr[arr.length - 1];
+//			if (!(userAccount.getRoles().contains(Role.ADMINISTRATOR) || principal.equalsIgnoreCase(owner))) {
+//				response.sendError(403, "Permission denied");
+//				return;
+//			}
+//		}
 		chain.doFilter(request, response);
 	}
-	
+
 	private boolean checkEndpoint(String method, String path) {
-      return path.matches("/account/user/\\w+/role/\\w+");
-  }
+		return HttpMethod.DELETE.matches(method) && path.matches("/account/user/\\w+");
+	}
 
 }
