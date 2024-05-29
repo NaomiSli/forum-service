@@ -1,8 +1,8 @@
 package telran.java52.accounting.service;
 
-import org.mindrot.jbcrypt.BCrypt;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -23,6 +23,7 @@ public class UserAccountServiceImpl implements UserAccountService, CommandLineRu
 
 	final UserAccountRepository userAccountRepository;
 	final ModelMapper modelMapper;
+	final PasswordEncoder passwordEncoder;
 
 	@Override
 	public UserDto register(UserRegisterDto userRegisterDto) {
@@ -30,7 +31,7 @@ public class UserAccountServiceImpl implements UserAccountService, CommandLineRu
 			throw new UserExistsException();
 		}
 		UserAccount userAccount = modelMapper.map(userRegisterDto, UserAccount.class);
-		String password = BCrypt.hashpw(userRegisterDto.getPassword(), BCrypt.gensalt());
+		String password = passwordEncoder.encode(userRegisterDto.getPassword());
 		userAccount.setPassword(password);
 		userAccountRepository.save(userAccount);
 		return modelMapper.map(userAccount, UserDto.class);
@@ -84,22 +85,21 @@ public class UserAccountServiceImpl implements UserAccountService, CommandLineRu
 	@Override
 	public void changePassword(String login, String newPassword) {
 		UserAccount userAccount = userAccountRepository.findById(login).orElseThrow(UserNotFoundException::new);
-		String password = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+		String password = passwordEncoder.encode(newPassword);
 		userAccount.setPassword(password);
 		userAccountRepository.save(userAccount);
-
 	}
 
 	@Override
 	public void run(String... args) throws Exception {
-		if (!userAccountRepository.existsById("admin")) {
-			String password = BCrypt.hashpw("admin", BCrypt.gensalt());
-			UserAccount userAccount = new UserAccount("admin", "", "", password);
+		if(!userAccountRepository.existsById("admin")) {
+			String password = passwordEncoder.encode("admin");
+			UserAccount userAccount = new UserAccount("admin", "", "", password );
 			userAccount.addRole(Role.MODERATOR.name());
 			userAccount.addRole(Role.ADMINISTRATOR.name());
 			userAccountRepository.save(userAccount);
 		}
-
+		
 	}
 
 }
